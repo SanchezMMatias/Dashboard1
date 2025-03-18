@@ -1,15 +1,13 @@
-# Importar las bibliotecas necesarias
+# Asegúrate de que este sea el nombre de tu archivo: Dashboard1.py
+
 import pandas as pd
-import re
-from datetime import datetime
-from dash import Dash, html, dash_table, dcc, Input, Output, State
 import plotly.express as px
+from dash import Dash, html, dcc, dash_table, Input, Output
 import dash_bootstrap_components as dbc
 
-# Cargar los archivos Excel desde rutas relativas
+# Aquí debes cargar tus archivos Excel
 file_name_organizations = "detail-organizations-2025-03-18.xlsx"
 file_name_subscriptions = "detail-subscription-2025-03-18.xlsx"
-print(f"Archivos cargados: {file_name_organizations}, {file_name_subscriptions}")
 
 # Cargar los datos en DataFrames
 df_organizations = pd.read_excel(file_name_organizations, sheet_name="Organizations")
@@ -36,15 +34,12 @@ kam_status_summary = kam_status_summary.reindex(columns=['Active', 'Pending'], f
 kam_status_summary['Total'] = kam_status_summary.sum(axis=1)  # Agregar columna Total
 kam_status_summary = kam_status_summary.reset_index()  # Resetear índice
 
-# Crear la aplicación Dash con un tema de Bootstrap
+# Crear la aplicación
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
-# Definir el layout del dashboard unificado
+# Definir el layout del dashboard
 app.layout = dbc.Container([
-    # Título principal
-    dbc.Row(
-        dbc.Col(html.H1("Dashboard de Empresas y Subscripciones", className="text-center my-4"))
-    ),
+    dbc.Row(dbc.Col(html.H1("Dashboard de Empresas y Subscripciones", className="text-center my-4"))),
 
     # Sección 1: Empresas por estado (Active/Pending)
     dbc.Row([
