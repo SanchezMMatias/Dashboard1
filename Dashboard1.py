@@ -36,6 +36,7 @@ kam_status_summary = kam_status_summary.reset_index()  # Resetear índice
 
 # Crear la aplicación
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+server = app.server  
 
 # Definir el layout del dashboard
 app.layout = dbc.Container([
