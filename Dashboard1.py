@@ -6,8 +6,8 @@ from dash import Dash, html, dcc, dash_table, Input, Output
 import dash_bootstrap_components as dbc
 
 # Aquí debes cargar tus archivos Excel
-file_name_organizations = "detail-organizations-2025-03-18.xlsx"
-file_name_subscriptions = "detail-subscription-2025-03-18.xlsx"
+file_name_organizations = "detail-organizations-2025-03-19.xlsx"
+file_name_subscriptions = "detail-subscription-2025-03-19.xlsx"
 
 # Cargar los datos en DataFrames
 df_organizations = pd.read_excel(file_name_organizations, sheet_name="Organizations")
