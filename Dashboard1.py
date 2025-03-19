@@ -8,6 +8,12 @@ import logging
 # Configurar logging para poder ver errores en Render
 logging.basicConfig(level=logging.INFO)
 
+# Crear la aplicación Dash con un tema de Bootstrap
+app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+
+# Importante: Exponer el servidor WSGI para Gunicorn
+server = app.server  # Esta línea es crítica para el despliegue en Render
+
 # Cargar los archivos Excel desde las rutas locales
 file_name_organizations = "detail-organizations-2025-03-19.xlsx"  # Ruta del primer archivo
 file_name_subscriptions = "detail-subscription-2025-03-19.xlsx"  # Ruta del segundo archivo
@@ -46,7 +52,7 @@ kam_status_summary = kam_status_summary.reindex(columns=['Active', 'Pending', 'S
 kam_status_summary['Total'] = kam_status_summary.sum(axis=1)  # Agregar columna Total
 kam_status_summary = kam_status_summary.reset_index()  # Resetear índice
 
-# CORRECCIÓN: Crear el resumen por owner y país de manera simplificada
+# Crear el resumen por owner y país de manera simplificada
 try:
     # Inicializar DataFrame vacío
     resumen_owner_pais = pd.DataFrame()
@@ -109,9 +115,6 @@ except Exception as e:
         'Total': [0],
         'Avance': [0.0]
     })
-
-# Crear la aplicación Dash con un tema de Bootstrap
-app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 # Definir el layout del dashboard unificado
 app.layout = dbc.Container([
@@ -249,7 +252,7 @@ app.layout = dbc.Container([
         dbc.Col([
             html.H2("Resumen por Owner y País", className="text-center"),
             
-            # CORRECCIÓN: Implementar manejo de errores para la tabla resumen
+            # Implementar manejo de errores para la tabla resumen
             dbc.Card([
                 dbc.CardBody([
                     html.Div(id='container-tabla-resumen', children=[
