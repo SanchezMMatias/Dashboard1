@@ -5,8 +5,8 @@ import plotly.express as px
 import dash_bootstrap_components as dbc
 
 # Cargar los archivos Excel desde las rutas locales
-file_name_organizations = r"C:\Users\Matias Sanchez\Desktop\detail-organizations-2025-03-19.xlsx"  # Ruta del primer archivo
-file_name_subscriptions = r"C:\Users\Matias Sanchez\Desktop\detail-subscription-2025-03-19.xlsx"  # Ruta del segundo archivo
+file_name_organizations = "detail-organizations-2025-03-19.xlsx"  # Ruta del primer archivo
+file_name_subscriptions = "detail-subscription-2025-03-19.xlsx"  # Ruta del segundo archivo
 print(f"Archivos cargados: {file_name_organizations}, {file_name_subscriptions}")
 
 # Cargar los datos en DataFrames
