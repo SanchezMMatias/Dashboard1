@@ -3,15 +3,26 @@ import pandas as pd
 from dash import Dash, html, dash_table, dcc, Input, Output, State
 import plotly.express as px
 import dash_bootstrap_components as dbc
+import logging
+
+# Configurar logging para poder ver errores en Render
+logging.basicConfig(level=logging.INFO)
 
 # Cargar los archivos Excel desde las rutas locales
 file_name_organizations = "detail-organizations-2025-03-19.xlsx"  # Ruta del primer archivo
 file_name_subscriptions = "detail-subscription-2025-03-19.xlsx"  # Ruta del segundo archivo
-print(f"Archivos cargados: {file_name_organizations}, {file_name_subscriptions}")
+logging.info(f"Archivos cargados: {file_name_organizations}, {file_name_subscriptions}")
 
 # Cargar los datos en DataFrames
-df_organizations = pd.read_excel(file_name_organizations, sheet_name="Organizations")
-df_subscriptions = pd.read_excel(file_name_subscriptions)
+try:
+    df_organizations = pd.read_excel(file_name_organizations, sheet_name="Organizations")
+    df_subscriptions = pd.read_excel(file_name_subscriptions)
+    logging.info("DataFrames cargados correctamente")
+except Exception as e:
+    logging.error(f"Error al cargar archivos: {str(e)}")
+    # Creamos DataFrames vacíos para evitar errores
+    df_organizations = pd.DataFrame()
+    df_subscriptions = pd.DataFrame()
 
 # Normalizar los valores de 'status' en el primer archivo
 df_organizations['status'] = df_organizations['status'].str.strip().str.capitalize()
@@ -35,22 +46,69 @@ kam_status_summary = kam_status_summary.reindex(columns=['Active', 'Pending', 'S
 kam_status_summary['Total'] = kam_status_summary.sum(axis=1)  # Agregar columna Total
 kam_status_summary = kam_status_summary.reset_index()  # Resetear índice
 
-# Calcular el resumen por owner y país
-resumen_owner_pais = df_organizations.groupby(['owner', 'country']).agg(
-    Active=('status', lambda x: (x == 'Active').sum()),
-    Pending=('status', lambda x: (x == 'Pending').sum()),
-    Suspended=('status', lambda x: (x == 'Suspended').sum())
-).reset_index()
-
-# Calcular el total y el avance
-resumen_owner_pais['Total'] = resumen_owner_pais['Active'] + resumen_owner_pais['Pending'] + resumen_owner_pais['Suspended']
-resumen_owner_pais['Avance'] = (resumen_owner_pais['Active'] / resumen_owner_pais['Total']) * 100
-resumen_owner_pais['Avance'] = resumen_owner_pais['Avance'].round(2)  # Redondear a 2 decimales
-
-# Verificar el DataFrame
-print("Resumen por Owner y País:")
-print(resumen_owner_pais.head())  # Muestra las primeras filas del DataFrame
-print(resumen_owner_pais.columns)  # Muestra las columnas del DataFrame
+# CORRECCIÓN: Crear el resumen por owner y país de manera simplificada
+try:
+    # Inicializar DataFrame vacío
+    resumen_owner_pais = pd.DataFrame()
+    
+    # Obtener valores únicos de owner y country
+    owners = df_organizations['owner'].dropna().unique()
+    
+    # Para cada combinación owner-país, calcular los valores
+    for owner in owners:
+        # Filtrar por owner
+        df_owner = df_organizations[df_organizations['owner'] == owner]
+        countries = df_owner['country'].dropna().unique()
+        
+        for country in countries:
+            # Filtrar por país
+            df_filtered = df_owner[df_owner['country'] == country]
+            
+            # Contar por status
+            active = df_filtered[df_filtered['status'] == 'Active'].shape[0]
+            pending = df_filtered[df_filtered['status'] == 'Pending'].shape[0]
+            suspended = df_filtered[df_filtered['status'] == 'Suspended'].shape[0]
+            
+            # Calcular total y avance
+            total = active + pending + suspended
+            avance = round((active / total) * 100, 2) if total > 0 else 0
+            
+            # Crear nueva fila
+            nueva_fila = pd.DataFrame({
+                'owner': [owner],
+                'country': [country],
+                'Active': [active],
+                'Pending': [pending],
+                'Suspended': [suspended],
+                'Total': [total],
+                'Avance': [avance]
+            })
+            
+            # Añadir al DataFrame principal
+            resumen_owner_pais = pd.concat([resumen_owner_pais, nueva_fila], ignore_index=True)
+    
+    # Asegurar tipos de datos correctos
+    resumen_owner_pais['Active'] = resumen_owner_pais['Active'].astype(int)
+    resumen_owner_pais['Pending'] = resumen_owner_pais['Pending'].astype(int)
+    resumen_owner_pais['Suspended'] = resumen_owner_pais['Suspended'].astype(int)
+    resumen_owner_pais['Total'] = resumen_owner_pais['Total'].astype(int)
+    resumen_owner_pais['Avance'] = resumen_owner_pais['Avance'].astype(float)
+    
+    logging.info("Resumen por Owner y País creado correctamente")
+    logging.info(f"Filas en resumen: {len(resumen_owner_pais)}")
+    
+except Exception as e:
+    logging.error(f"Error al crear resumen por owner y país: {str(e)}")
+    # Crear un DataFrame de ejemplo para evitar errores
+    resumen_owner_pais = pd.DataFrame({
+        'owner': ['Error'],
+        'country': ['Error'],
+        'Active': [0],
+        'Pending': [0],
+        'Suspended': [0],
+        'Total': [0],
+        'Avance': [0.0]
+    })
 
 # Crear la aplicación Dash con un tema de Bootstrap
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -191,17 +249,20 @@ app.layout = dbc.Container([
         dbc.Col([
             html.H2("Resumen por Owner y País", className="text-center"),
             
-            # Tarjeta con la tabla de resumen por owner y país (con paginación)
+            # CORRECCIÓN: Implementar manejo de errores para la tabla resumen
             dbc.Card([
                 dbc.CardBody([
-                    dash_table.DataTable(
-                        id='tabla-resumen-owner-pais',
-                        columns=[{"name": i, "id": i} for i in resumen_owner_pais.columns],
-                        data=resumen_owner_pais.to_dict('records'),
-                        style_table={'height': '300px', 'overflowY': 'auto'},
-                        style_cell={'textAlign': 'left', 'padding': '10px'},
-                        page_size=10  # Mostrar 10 filas por página
-                    ),
+                    html.Div(id='container-tabla-resumen', children=[
+                        # La tabla se crea dinámicamente para manejar errores potenciales
+                        dash_table.DataTable(
+                            id='tabla-resumen-owner-pais',
+                            columns=[{"name": i, "id": i} for i in resumen_owner_pais.columns],
+                            data=resumen_owner_pais.to_dict('records'),
+                            style_table={'height': '300px', 'overflowY': 'auto'},
+                            style_cell={'textAlign': 'left', 'padding': '10px'},
+                            page_size=10  # Mostrar 10 filas por página
+                        ),
+                    ]),
                     html.Br(),
                     dbc.Button("Descargar Resumen", id="btn-descargar-resumen", color="primary"),
                     dcc.Download(id="descargar-resumen")
