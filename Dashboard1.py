@@ -5,8 +5,8 @@ import plotly.express as px
 import dash_bootstrap_components as dbc
 
 # Cargar los archivos Excel desde las rutas locales
-file_name_organizations = "detail-organizations-2025-03-19.xlsx"  # Ruta del primer archivo
-file_name_subscriptions = "detail-subscription-2025-03-19.xlsx"  # Ruta del segundo archivo
+file_name_organizations = r"C:\Users\Matias Sanchez\Desktop\detail-organizations-2025-03-19.xlsx"  # Ruta del primer archivo
+file_name_subscriptions = r"C:\Users\Matias Sanchez\Desktop\detail-subscription-2025-03-19.xlsx"  # Ruta del segundo archivo
 print(f"Archivos cargados: {file_name_organizations}, {file_name_subscriptions}")
 
 # Cargar los datos en DataFrames
@@ -47,8 +47,10 @@ resumen_owner_pais['Total'] = resumen_owner_pais['Active'] + resumen_owner_pais[
 resumen_owner_pais['Avance'] = (resumen_owner_pais['Active'] / resumen_owner_pais['Total']) * 100
 resumen_owner_pais['Avance'] = resumen_owner_pais['Avance'].round(2)  # Redondear a 2 decimales
 
-# Crear un DataFrame con empresas sin segmento agrupadas por propietario
-empresas_sin_segmento_por_owner = df_organizations[df_organizations['segment'].isna()].groupby('owner').size().reset_index(name='Cantidad')
+# Verificar el DataFrame
+print("Resumen por Owner y País:")
+print(resumen_owner_pais.head())  # Muestra las primeras filas del DataFrame
+print(resumen_owner_pais.columns)  # Muestra las columnas del DataFrame
 
 # Crear la aplicación Dash con un tema de Bootstrap
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -113,40 +115,13 @@ app.layout = dbc.Container([
                     dcc.Graph(
                         id='grafico-empresas',
                         figure=px.bar(
-                            empresas_sin_segmento_por_owner,
+                            df_organizations[df_organizations['segment'].isna()]['owner'].value_counts().reset_index().rename(columns={'index': 'owner', 0: 'count'}),
                             x='owner',  # Usar 'owner' para los valores únicos
-                            y='Cantidad',  # Usar 'Cantidad' para las frecuencias
+                            y='count',  # Usar 'count' para las frecuencias
                             title="Empresas sin Segmento por Propietario",
-                            labels={'owner': 'Propietario', 'Cantidad': 'Cantidad'}
+                            labels={'owner': 'Propietario', 'count': 'Cantidad'}
                         )
-                    ),
-                    html.Br(),
-                    dbc.Button("Descargar Empresas sin Segmento por Propietario", id="btn-descargar-empresas-por-owner", color="primary"),
-                    dcc.Download(id="descargar-empresas-por-owner")
-                ])
-            ], className="mb-4")
-        ], width=12)
-    ]),
-    
-    # Sección 4: Resumen por owner y país
-    dbc.Row([
-        dbc.Col([
-            html.H2("Resumen por Owner y País", className="text-center"),
-            
-            # Tarjeta con la tabla de resumen por owner y país (con paginación)
-            dbc.Card([
-                dbc.CardBody([
-                    dash_table.DataTable(
-                        id='tabla-resumen-owner-pais',
-                        columns=[{"name": i, "id": i} for i in resumen_owner_pais.columns],
-                        data=resumen_owner_pais.to_dict('records'),
-                        style_table={'height': '300px', 'overflowY': 'auto'},
-                        style_cell={'textAlign': 'left', 'padding': '10px'},
-                        page_size=10  # Mostrar 10 filas por página
-                    ),
-                    html.Br(),
-                    dbc.Button("Descargar Resumen", id="btn-descargar-resumen", color="primary"),
-                    dcc.Download(id="descargar-resumen")
+                    )
                 ])
             ], className="mb-4")
         ], width=12)
@@ -209,6 +184,30 @@ app.layout = dbc.Container([
                 ], label="Distribución por Producto")
             ])
         ], width=12)
+    ]),
+
+    # Sección 4: Resumen por owner y país
+    dbc.Row([
+        dbc.Col([
+            html.H2("Resumen por Owner y País", className="text-center"),
+            
+            # Tarjeta con la tabla de resumen por owner y país (con paginación)
+            dbc.Card([
+                dbc.CardBody([
+                    dash_table.DataTable(
+                        id='tabla-resumen-owner-pais',
+                        columns=[{"name": i, "id": i} for i in resumen_owner_pais.columns],
+                        data=resumen_owner_pais.to_dict('records'),
+                        style_table={'height': '300px', 'overflowY': 'auto'},
+                        style_cell={'textAlign': 'left', 'padding': '10px'},
+                        page_size=10  # Mostrar 10 filas por página
+                    ),
+                    html.Br(),
+                    dbc.Button("Descargar Resumen", id="btn-descargar-resumen", color="primary"),
+                    dcc.Download(id="descargar-resumen")
+                ])
+            ], className="mb-4")
+        ], width=12)
     ])
 ], fluid=True)
 
@@ -220,15 +219,6 @@ app.layout = dbc.Container([
 )
 def descargar_empresas(n_clicks):
     return dcc.send_data_frame(df_organizations[df_organizations['segment'].isna()][['owner', 'name']].to_excel, "empresas_sin_segmento.xlsx", index=False)
-
-# Callback para la descarga de datos de empresas sin segmento por propietario
-@app.callback(
-    Output("descargar-empresas-por-owner", "data"),
-    Input("btn-descargar-empresas-por-owner", "n_clicks"),
-    prevent_initial_call=True
-)
-def descargar_empresas_por_owner(n_clicks):
-    return dcc.send_data_frame(empresas_sin_segmento_por_owner.to_excel, "empresas_sin_segmento_por_propietario.xlsx", index=False)
 
 # Callback para la descarga de datos de subscripciones filtradas
 @app.callback(
@@ -250,4 +240,4 @@ def descargar_resumen(n_clicks):
 
 # Ejecutar la aplicación
 if __name__ == "__main__":
-    app.run(debug=False)  # Cambia run_server por run
+    app.run(debug=False)
