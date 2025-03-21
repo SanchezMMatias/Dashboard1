@@ -15,8 +15,8 @@ app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 server = app.server  # Esta línea es crítica para el despliegue en Render
 
 # Cargar los archivos Excel desde las rutas locales
-file_name_organizations = "detail-organizations-2025-03-20.xlsx"  # Ruta del primer archivo
-file_name_subscriptions = "detail-subscription-2025-03-20.xlsx"  # Ruta del segundo archivo
+file_name_organizations = "detail-organizations-2025-03-21.xlsx"  # Ruta del primer archivo
+file_name_subscriptions = "detail-subscription-2025-03-21.xlsx"  # Ruta del segundo archivo
 logging.info(f"Archivos cargados: {file_name_organizations}, {file_name_subscriptions}")
 
 # Cargar los datos en DataFrames
