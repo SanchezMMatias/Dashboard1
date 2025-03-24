@@ -1,6 +1,6 @@
-dash
-dash-bootstrap-components
-pandas
-plotly
-gunicorn
-openpyxl  # Necesario para leer archivos Excel
+dash>=2.0.0
+dash-bootstrap-components>=1.0.0
+pandas>=2.0.0
+plotly>=5.0.0
+gunicorn>=20.0.0
+openpyxl>=3.0.0
