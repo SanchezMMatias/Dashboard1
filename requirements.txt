@@ -4,3 +4,6 @@ pandas==2.0.3
 plotly==5.18.0
 gunicorn==21.2.0
 openpyxl==3.1.2
+numpy==1.24.4
+pytz==2024.1
+python-dateutil==2.9.0
