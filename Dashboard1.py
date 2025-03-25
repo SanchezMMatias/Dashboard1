@@ -57,8 +57,8 @@ def load_and_prepare_data():
     """Carga y prepara los datos para el dashboard"""
     try:
         # Cargar los archivos Excel (ajusta estas rutas)
-        file_name_organizations = "detail-organizations-2025-03-24.xlsx"
-        file_name_subscriptions = "detail-subscription-2025-03-24.xlsx"
+        file_name_organizations = "detail-organizations-2025-03-25.xlsx"
+        file_name_subscriptions = "detail-subscription-2025-03-25.xlsx"
         
         df_organizations = pd.read_excel(file_name_organizations, sheet_name="Organizations")
         df_subscriptions = pd.read_excel(file_name_subscriptions)
