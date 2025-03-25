@@ -53,8 +53,8 @@ def load_and_prepare_data():
     """Carga y prepara los datos para el dashboard"""
     try:
         # Cargar los archivos Excel (ajusta estas rutas)
-        file_name_organizations = r"C:\Users\Matias Sanchez\Desktop\detail-organizations-2025-03-24.xlsx"
-        file_name_subscriptions = r"C:\Users\Matias Sanchez\Desktop\detail-subscription-2025-03-24.xlsx"
+        file_name_organizations = "detail-organizations-2025-03-24.xlsx"
+        file_name_subscriptions = "detail-subscription-2025-03-24.xlsx"
         
         df_organizations = pd.read_excel(file_name_organizations, sheet_name="Organizations")
         df_subscriptions = pd.read_excel(file_name_subscriptions)
@@ -102,7 +102,7 @@ def load_and_prepare_data():
                 resumen_owner_pais = pd.concat([resumen_owner_pais, nueva_fila], ignore_index=True)
         
         # Marketplace data
-        df_orders = pd.read_excel(r"C:\Users\Matias Sanchez\Desktop\detail-order-2025-01-01-to-2025-03-24.xlsx")  
+        df_orders = pd.read_excel("detail-order-2025-01-01-to-2025-03-24.xlsx")  
         df_orders['Date Creation Order'] = pd.to_datetime(df_orders['Date Creation Order'], format='%d-%m-%Y')
         df_orders['TCV Item'] = (
             df_orders['TCV Item']
