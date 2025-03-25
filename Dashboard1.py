@@ -21,6 +21,10 @@ app = dash.Dash(__name__,
                 external_stylesheets=[dbc.themes.BOOTSTRAP], 
                 suppress_callback_exceptions=True)
 
+# Importante: Exponer el servidor WSGI para Gunicorn
+server = app.server
+
+
 # =============================================
 # Layout de inicio de sesión
 # =============================================
